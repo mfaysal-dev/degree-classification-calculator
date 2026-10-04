@@ -24,7 +24,7 @@ const toModules = (rows: Row[]): Module[] =>
 
 const fmt = (n: number | null) => (n === null ? "–" : (Math.round(n * 100) / 100).toFixed(2));
 
-function YearTable({ title, rows, onChange, idp }: { title: string; rows: Row[]; onChange: (rows: Row[]) => void; idp: string }) {
+function YearTable({ title, short, rows, onChange, idp }: { title: string; short: string; rows: Row[]; onChange: (rows: Row[]) => void; idp: string }) {
   const set = (id: number, patch: Partial<Row>) => onChange(rows.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   return (
     <fieldset className="card">
@@ -39,20 +39,20 @@ function YearTable({ title, rows, onChange, idp }: { title: string; rows: Row[];
           return (
             <li key={r.id} className="grid grid-cols-[1fr_1fr_2.75rem] gap-2 sm:grid-cols-[1fr_5.5rem_5.5rem_2.75rem]">
               <label className="col-span-3 sm:col-span-1">
-                <span className="sr-only">Module {i + 1} name</span>
+                <span className="sr-only">{short} module {i + 1} name</span>
                 <input className="field" value={r.name} placeholder={`Module ${i + 1}`} onChange={(e) => set(r.id, { name: e.target.value })} />
               </label>
               <label>
-                <span className="text-xs text-slate-600 sm:sr-only">Credits for module {i + 1}</span>
+                <span className="text-xs text-slate-600 sm:sr-only">Credits<span className="sr-only"> for {short} module {i + 1}</span></span>
                 <input className="field" inputMode="numeric" value={r.credits} onChange={(e) => set(r.id, { credits: e.target.value })} />
               </label>
               <label>
-                <span className="text-xs text-slate-600 sm:sr-only">Mark for module {i + 1} (%)</span>
+                <span className="text-xs text-slate-600 sm:sr-only">Mark %<span className="sr-only"> for {short} module {i + 1}</span></span>
                 <input className="field" inputMode="decimal" value={r.mark} placeholder="–" aria-invalid={bad}
                   onChange={(e) => set(r.id, { mark: e.target.value })} />
               </label>
               <button type="button" className="self-end rounded-lg border border-slate-300 py-2.5 text-slate-600 hover:bg-slate-100"
-                aria-label={`Remove module ${i + 1}`} onClick={() => onChange(rows.filter((x) => x.id !== r.id))}>×</button>
+                aria-label={`Remove ${short} module ${i + 1}`} onClick={() => onChange(rows.filter((x) => x.id !== r.id))}>×</button>
             </li>
           );
         })}
@@ -133,8 +133,8 @@ export function DegreeCalculator() {
         )}
       </div>
 
-      <YearTable title="Second year (Level 5)" rows={s.y2} idp={`${id}-y2`} onChange={(y2) => setS({ ...s, y2 })} />
-      <YearTable title="Final year (Level 6)" rows={s.y3} idp={`${id}-y3`} onChange={(y3) => setS({ ...s, y3 })} />
+      <YearTable title="Second year (Level 5)" short="second-year" rows={s.y2} idp={`${id}-y2`} onChange={(y2) => setS({ ...s, y2 })} />
+      <YearTable title="Final year (Level 6)" short="final-year" rows={s.y3} idp={`${id}-y3`} onChange={(y3) => setS({ ...s, y3 })} />
 
       <section className="card border-[var(--accent)]" aria-live="polite" aria-labelledby={`${id}-res`}>
         <h2 id={`${id}-res`} className="text-sm font-semibold uppercase tracking-wide text-[var(--accent)]">Your predicted degree</h2>
@@ -173,7 +173,7 @@ export function DegreeCalculator() {
           {targets.map(({ b, r }) => (
             <li key={b.short}>
               <strong>{b.short}:</strong>{" "}
-              {r.status === "needed" && <>an average of {r.mark.toFixed(1)}% on the remaining credits</>}
+              {r.status === "needed" && <>an average of {r.mark.toFixed(1)}% on the remaining credits{r.mark < 40 && " (you still need to pass each module)"}</>}
               {r.status === "secured" && <>already reached on these weights, whatever you score</>}
               {r.status === "impossible" && <>out of reach (would need {r.mark.toFixed(1)}%)</>}
               {r.status === "no-credits-left" && <>no final-year credits left to change the result</>}
